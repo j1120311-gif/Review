@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>會考五科複習站</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg:#f8f7f4; --surface:#fff; --surface2:#f1efe8;
+  --text:#1a1a1a; --text2:#6b6b6b;
+  --border:rgba(0,0,0,0.1); --border2:rgba(0,0,0,0.18);
+  --blue:#378ADD; --blue-l:#E6F1FB; --blue-d:#0C447C;
+  --green:#639922; --green-l:#EAF3DE; --green-d:#27500A;
+  --red:#E24B4A; --red-l:#FCEBEB; --red-d:#A32D2D;
+  --amber:#BA7517; --amber-l:#FAEEDA; --amber-d:#633806;
+  --purple:#534AB7; --purple-l:#EEEDFE; --purple-d:#26215C;
+  --teal:#0F6E56; --teal-l:#E1F5EE; --teal-d:#04342C;
+}
+body { font-family: -apple-system,'Noto Sans TC',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+header { background:var(--surface); border-bottom:0.5px solid var(--border); padding:14px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:200; }
+.logo { width:34px; height:34px; background:var(--blue); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.logo svg { width:18px; height:18px; stroke:white; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+header h1 { font-size:15px; font-weight:700; }
+.badge { margin-left:auto; background:var(--red-l); color:var(--red-d); font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+.main { max-width:900px; margin:0 auto; padding:18px 14px 80px; }
+.subject-bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.sb { padding:9px 14px; border-radius:22px; border:1px solid var(--border2); background:var(--surface); color:var(--text2); font-size:13px; font-family:inherit; font-weight:500; cursor:pointer; touch-action:manipulation; min-height:44px; display:flex; align-items:center; gap:5px; transition:all 0.15s; }
+.sb.on { color:white; border-color:transparent; }
+.sb[data-s="sci"].on  { background:var(--blue); }
+.sb[data-s="math"].on { background:var(--green); }
+.sb[data-s="eng"].on  { background:var(--purple); }
+.sb[data-s="hist"].on { background:var(--amber); }
+.sb[data-s="geo"].on  { background:var(--teal); }
+.sb[data-s="civ"].on  { background:var(--red); }
+.tab-bar { display:flex; gap:4px; margin-bottom:18px; background:var(--surface); border-radius:12px; padding:4px; border:1px solid var(--border); }
+.tb { flex:1; padding:10px 6px; border:none; border-radius:9px; background:transparent; color:var(--text2); font-size:14px; font-family:inherit; font-weight:500; cursor:pointer; touch-action:manipulation; min-height:44px; }
+.tb.on { background:var(--blue); color:white; }
+.pane { display:none; } .pane.on { display:block; }
+.hint { font-size:13px; color:var(--text2); margin-bottom:14px; }
+.chip-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:16px; }
+.chip { padding:7px 14px; border-radius:20px; border:1px solid var(--border2); background:var(--surface); color:var(--text2); font-size:13px; font-family:inherit; font-weight:500; cursor:pointer; touch-action:manipulation; min-height:40px; display:flex; align-items:center; }
+.chip.on { background:var(--blue-l); color:var(--blue-d); border-color:var(--blue); }
+.notes-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:12px; }
+.note-h { font-size:15px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.tag { font-size:11px; font-weight:600; padding:3px 9px; border-radius:10px; }
+.tag-r { background:var(--red-l); color:var(--red-d); }
+.tag-b { background:var(--blue-l); color:var(--blue-d); }
+.note-item { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-bottom:0.5px solid var(--border); }
+.note-item:last-child { border-bottom:none; padding-bottom:0; }
+.dot { width:6px; height:6px; min-width:6px; border-radius:50%; background:var(--blue); margin-top:8px; }
+.note-t { font-size:13px; line-height:1.75; color:var(--text); }
+.note-s { font-size:12px; color:var(--text2); margin-top:3px; }
+.fml { background:var(--surface2); border-left:3px solid var(--blue); padding:8px 12px; margin:6px 0; font-size:13px; line-height:1.6; border-radius:0 6px 6px 0; }
+.prog-wrap { margin-bottom:16px; }
+.prog-meta { display:flex; justify-content:space-between; font-size:13px; color:var(--text2); margin-bottom:7px; }
+.prog-bg { height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+.prog-fill { height:5px; background:var(--blue); border-radius:3px; transition:width 0.3s; }
+.q-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:12px; }
+.q-meta { display:flex; gap:7px; margin-bottom:12px; flex-wrap:wrap; align-items:center; }
+.q-text { font-size:14px; font-weight:500; line-height:1.75; margin-bottom:16px; }
+.opts { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.opt { padding:13px 16px; border-radius:10px; border:1px solid var(--border2); background:transparent; text-align:left; cursor:pointer; font-size:14px; font-family:inherit; color:var(--text); touch-action:manipulation; min-height:48px; width:100%; }
+.opt.correct { background:var(--green-l); border-color:var(--green); color:var(--green-d); font-weight:500; }
+.opt.wrong { background:var(--red-l); border-color:var(--red); color:var(--red-d); }
+.opt:disabled { cursor:default; }
+.explain { background:var(--surface2); border-radius:10px; padding:13px; font-size:13px; color:var(--text2); line-height:1.7; display:none; }
+.explain.show { display:block; }
+.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.btn { padding:12px 22px; border-radius:10px; border:1px solid var(--border2); background:var(--surface); cursor:pointer; font-size:14px; font-family:inherit; color:var(--text); font-weight:500; touch-action:manipulation; min-height:46px; }
+.btn.primary { background:var(--blue); color:white; border-color:var(--blue); }
+.score-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+.score-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.score-label { font-size:12px; color:var(--text2); margin-bottom:5px; }
+.score-val { font-size:26px; font-weight:700; }
+.weak-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:14px; }
+.weak-title { font-size:14px; font-weight:700; margin-bottom:12px; }
+.weak-item { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:0.5px solid var(--border); font-size:13px; }
+.weak-item:last-child { border-bottom:none; }
+.mini-bar-bg { width:60px; height:5px; background:var(--surface2); border-radius:3px; overflow:hidden; display:inline-block; vertical-align:middle; margin:0 6px; }
+.mini-bar { height:5px; border-radius:3px; }
+footer { text-align:center; font-size:12px; color:var(--text2); padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg viewBox="0 0 24 24"><polyline points="2,7 12,2 22,7"/><polyline points="2,12 12,7 22,12"/><polyline points="2,17 12,12 22,17"/></svg></div>
+  <div><h1>會考五科複習站</h1></div>
+  <div class="badge">加油！你可以的 💪</div>
+</header>
+
+<div class="main">
+  <div class="subject-bar" id="subject-bar">
+    <button class="sb on" data-s="sci">🔬 自然</button>
+    <button class="sb" data-s="math">📐 數學</button>
+    <button class="sb" data-s="eng">🔤 英文</button>
+    <button class="sb" data-s="hist">📜 歷史</button>
+    <button class="sb" data-s="geo">🌏 地理</button>
+    <button class="sb" data-s="civ">⚖️ 公民</button>
+  </div>
+  <div class="tab-bar" id="tab-bar">
+    <button class="tb on" data-t="notes">重點筆記</button>
+    <button class="tb" data-t="quiz">模擬練習</button>
+    <button class="tb" data-t="stats">弱點分析</button>
+  </div>
+  <div id="pane-notes" class="pane on">
+    <div id="sub-chips" class="chip-row"></div>
+    <div id="notes-content"></div>
+  </div>
+  <div id="pane-quiz" class="pane">
+    <div class="prog-wrap">
+      <div class="prog-meta"><span id="q-label">題目 1/15</span><span id="q-score">答對：0</span></div>
+      <div class="prog-bg"><div class="prog-fill" id="q-bar" style="width:7%"></div></div>
+    </div>
+    <div id="q-container"></div>
+    <div class="btn-row"><button class="btn primary" id="btn-next" style="display:none">下一題 →</button></div>
+  </div>
+  <div id="pane-stats" class="pane">
+    <div class="score-grid">
+      <div class="score-card"><div class="score-label">已答題數</div><div class="score-val" id="st-total">0</div></div>
+      <div class="score-card"><div class="score-label">答對題數</div><div class="score-val" id="st-correct">0</div></div>
+      <div class="score-card"><div class="score-label">正確率</div><div class="score-val" id="st-pct">—</div></div>
+    </div>
+    <div class="weak-box"><div class="weak-title">各科表現</div><div id="weak-list"><p class="hint">先完成練習題，這裡會顯示弱點分析</p></div></div>
+    <div class="btn-row"><button class="btn" id="btn-reset">重置紀錄</button></div>
+  </div>
+</div>
+<footer>會考五科複習站 · 加油！你一定可以的 💪</footer>
+
+<script>
+var notes = {
+  sci: {
+    subs: ['生物','化學','物理','地科'],
+    生物:[
+      {h:'細胞與生命現象',freq:'高頻',items:[
+        {t:'動植物細胞差異：植物有細胞壁、葉綠體、大液泡；動物有中心粒',s:'考法：圖形辨別＋功能配對'},
+        {t:'光合作用（葉綠體）：6CO₂+6H₂O+光能 → C₆H₁₂O₆+6O₂'},
+        {t:'呼吸作用（粒線體）：C₆H₁₂O₆+6O₂ → 6CO₂+6H₂O+能量'},
+        {t:'有絲分裂（體細胞，染色體數不變）；減數分裂（配子，染色體數減半）'},
+      ]},
+      {h:'遺傳與基因',freq:'高頻',items:[
+        {t:'孟德爾F2代：顯性:隱性＝3:1',s:'常考：由後代比例推算親代基因型'},
+        {t:'中心法則：DNA→mRNA→蛋白質（轉錄在細胞核；轉譯在核糖體）'},
+        {t:'體細胞46條、配子23條；色盲為X染色體隱性遺傳'},
+        {t:'演化：天擇說（達爾文）—適者生存；突變提供遺傳變異'},
+      ]},
+      {h:'人體系統',freq:'中頻',items:[
+        {t:'體循環：左心室→主動脈→全身→右心房；肺循環：右心室→肺→左心房'},
+        {t:'反射弧：受器→傳入神經→中樞→傳出神經→動器'},
+        {t:'消化：澱粉→葡萄糖；蛋白質→胺基酸；脂肪→脂肪酸+甘油'},
+        {t:'激素（慢、持久、血液傳送）vs 神經（快、短暫）'},
+      ]},
+      {h:'生態系統',freq:'中頻',items:[
+        {t:'能量流動：每升一營養級只剩約10%；金字塔底端數量最多'},
+        {t:'食物網：多條食物鏈交叉；某物種消失影響整個食物網'},
+        {t:'生物多樣性三層次：基因、物種、生態系多樣性'},
+      ]},
+    ],
+    化學:[
+      {h:'物質的組成',freq:'高頻',items:[
+        {t:'物理變化 vs 化學變化：化學變化產生新物質',s:'例：冰融化=物理；鐵生鏽=化學'},
+        {t:'原子結構：質量數=質子數+中子數；同位素質子數相同中子數不同'},
+        {t:'週期表：同族性質相似；同週期由左到右金屬性減弱'},
+      ]},
+      {h:'酸鹼鹽',freq:'高頻',items:[
+        {t:'pH值：<7酸性，=7中性，>7鹼性；每差1，氫離子濃度差10倍'},
+        {t:'指示劑：石蕊（酸紅鹼藍）；酚酞（酸無色鹼粉紅）；BTB（酸黃中綠鹼藍）'},
+        {t:'中和反應：酸＋鹼→鹽＋水，例：HCl+NaOH→NaCl+H₂O'},
+      ]},
+      {h:'化學反應',freq:'中頻',items:[
+        {t:'質量守恆定律：反應前後總質量不變'},
+        {t:'氧化還原：氧化=失去電子；還原=得到電子（口訣：氧失還得）'},
+        {t:'電解質：溶於水可導電；強電解質完全解離（強酸、強鹼、鹽）'},
+      ]},
+    ],
+    物理:[
+      {h:'力與運動',freq:'高頻',items:[
+        {t:'牛頓第二定律：F=ma（合力為零→等速或靜止）'},
+        {t:'摩擦力：與接觸面積無關，與正向力成正比；靜摩擦力≥動摩擦力'},
+        {t:'能量守恆：動能+位能=定值（忽略摩擦）',s:'Ek=½mv²；Ep=mgh'},
+        {t:'壓力：固體P=F/A；液壓P=ρgh；浮力=排開液體重量'},
+      ]},
+      {h:'電與磁',freq:'高頻',items:[
+        {t:'歐姆定律：V=IR；P=IV=I²R=V²/R'},
+        {t:'串聯：電流相同，電壓分配；並聯：電壓相同，電流分配'},
+        {t:'電磁感應：磁通量改變→感應電流（發電機）；電流受磁力（電動機）'},
+        {t:'右手定則：判斷電流產生的磁場方向'},
+      ]},
+      {h:'波動與光學',freq:'中頻',items:[
+        {t:'波速：v=fλ（波速=頻率×波長）'},
+        {t:'凸透鏡：物距>2f→縮小倒立實像；f<物距<2f→放大倒立實像；物距<f→放大正立虛像'},
+        {t:'熱量：Q=mcΔT（熱量=質量×比熱×溫差）'},
+      ]},
+    ],
+    地科:[
+      {h:'地層與地質',freq:'高頻',items:[
+        {t:'板塊：台灣位於菲律賓海板塊＋歐亞板塊聚合處→多地震多高山'},
+        {t:'岩石循環：火成岩（岩漿冷卻）→沉積岩（壓實）→變質岩（高溫高壓）'},
+        {t:'地震波：P波（縱波）先到；S波（橫波）後到，不穿液體'},
+        {t:'地層定律：疊置律（下老上新）；化石定律（相同化石=相同時代）'},
+      ]},
+      {h:'天文與氣象',freq:'高頻',items:[
+        {t:'月食（滿月，地球在中間）；日食（新月，月球在中間）'},
+        {t:'月相週期約29.5天：新月→上弦→滿月→下弦→新月'},
+        {t:'四季：地球公轉＋地軸傾斜23.5°；北半球夏至白晝最長'},
+        {t:'颱風：強烈熱帶低壓；北半球逆時針旋轉；中心氣壓最低'},
+        {t:'鋒面：冷鋒（快速降溫強雨）；暖鋒（緩慢升溫綿雨）；滯留鋒（梅雨）'},
+      ]},
+    ],
+  },
+  math: {
+    subs: null,
+    data:[
+      {h:'數與式',freq:'高頻',items:[
+        {t:'指數律：aᵐ×aⁿ=aᵐ⁺ⁿ；(aᵐ)ⁿ=aᵐⁿ；a⁰=1（a≠0）'},
+        {t:'完全平方：(a+b)²=a²+2ab+b²；(a-b)²=a²-2ab+b²'},
+        {t:'平方差：(a+b)(a-b)=a²-b²'},
+        {t:'根號化簡：√a×√b=√(ab)；√a/√b=√(a/b)'},
+      ]},
+      {h:'一元二次方程式',freq:'高頻',items:[
+        {t:'公式解：x=(-b±√(b²-4ac))/2a'},
+        {t:'判別式 b²-4ac：>0兩相異實根；=0重根；<0無實根'},
+        {t:'根與係數：兩根之和=-b/a；兩根之積=c/a'},
+      ]},
+      {h:'函數與圖形',freq:'高頻',items:[
+        {t:'一次函數 y=mx+b：m為斜率，b為y截距；m>0正斜率，m<0負斜率'},
+        {t:'二次函數 y=ax²+bx+c：頂點=(-b/2a, f(-b/2a))；a>0開口朝上'},
+        {t:'反比函數 y=k/x：雙曲線；k>0在第一三象限'},
+      ]},
+      {h:'幾何',freq:'高頻',items:[
+        {t:'畢氏定理：a²+b²=c²（c為斜邊）',s:'常見組合：3-4-5、5-12-13、8-15-17'},
+        {t:'圓面積=πr²；圓周長=2πr；弧長=(圓心角/360)×2πr'},
+        {t:'相似三角形：對應邊成比例；面積比=邊長比的平方'},
+      ]},
+      {h:'統計與機率',freq:'中頻',items:[
+        {t:'平均數=總和÷個數；中位數=排序後中間值；眾數=出現最多的值'},
+        {t:'機率P=有利結果數÷總結果數（0≤P≤1）'},
+        {t:'排列P(n,r)=n!/(n-r)!；組合C(n,r)=n!/r!(n-r)!'},
+      ]},
+      {h:'數列與級數',freq:'中頻',items:[
+        {t:'等差數列：aₙ=a₁+(n-1)d；Sₙ=n(a₁+aₙ)/2'},
+        {t:'等比數列：aₙ=a₁×r^(n-1)；Sₙ=a₁(1-rⁿ)/(1-r)（r≠1）'},
+      ]},
+    ]
+  },
+  eng: {
+    subs: null,
+    data:[
+      {h:'時態重點',freq:'高頻',items:[
+        {t:'現在完成式：have/has+p.p.（經驗/完成）',s:'關鍵字：already, yet, just, ever, never, since, for'},
+        {t:'過去完成式：had+p.p.（兩過去事件中較早發生的）'},
+        {t:'被動式：be動詞+p.p.（主詞是動作承受者）'},
+        {t:'假設語氣：If+過去式, would/could+原形（與現在事實相反）'},
+      ]},
+      {h:'重要句型',freq:'高頻',items:[
+        {t:'關係子句：人用who；事物用which；兩者皆可用that',s:'非限定用法加逗號，不可用that'},
+        {t:'動名詞：enjoy/mind/finish/avoid/practice後接V-ing'},
+        {t:'不定詞：want/decide/hope/plan/need後接to+V'},
+        {t:'比較：more...than；the most；good→better→best'},
+      ]},
+      {h:'情態助動詞',freq:'中頻',items:[
+        {t:'must（必須/一定是）、should（應該）、might（可能）'},
+        {t:'used to+V（過去習慣）；be used to+V-ing（習慣於）'},
+        {t:'分詞構句：Having+p.p.（完成）；V-ing（主動）；p.p.（被動）'},
+      ]},
+      {h:'閱讀技巧',freq:'高頻',items:[
+        {t:'主旨題：看首段、首句，找重複出現的關鍵字',s:'選項太細節或太廣泛的通常不對'},
+        {t:'推論題：答案不直接出現，從上下文推斷'},
+        {t:'詞義題：用上下文判斷，注意對比詞（but）或說明詞（that is, or）'},
+        {t:'速讀法：先讀題目，帶著問題掃描文章'},
+      ]},
+      {h:'高頻單字',freq:'高頻',items:[
+        {t:'情緒：anxious（焦慮）、confident（自信）、frustrated（沮喪）、grateful（感謝）'},
+        {t:'動作：accomplish（完成）、contribute（貢獻）、inspire（啟發）、obtain（獲得）'},
+        {t:'轉折：however、therefore、moreover、as a result、on the other hand'},
+      ]},
+    ]
+  },
+  hist: {
+    subs: null,
+    data:[
+      {h:'台灣史：清領至日治',freq:'高頻',items:[
+        {t:'1895年馬關條約→台灣永久割讓給日本；乙未戰爭（台灣抵抗）'},
+        {t:'日治：六三法→總督府統治；1937皇民化運動（推日語、改日名）'},
+        {t:'日治經濟：糖業、鐵路、土地調查、現代化建設'},
+      ]},
+      {h:'台灣史：戰後至今',freq:'高頻',items:[
+        {t:'1945光復→二二八事件（1947）→1949戒嚴、國府遷台'},
+        {t:'1960~70年代：進口替代→出口擴張→十大建設→經濟奇蹟'},
+        {t:'民主化：1987解嚴→1991廢動員戡亂→1996總統直選'},
+      ]},
+      {h:'中國近代史',freq:'中頻',items:[
+        {t:'鴉片戰爭（1840）→南京條約：五口通商、香港割讓'},
+        {t:'甲午戰爭（1894）→馬關條約：台灣割讓、賠款二億兩'},
+        {t:'五四運動（1919）→新文化運動→白話文學'},
+        {t:'1949國共內戰→中華人民共和國成立→國民政府遷台'},
+      ]},
+      {h:'世界史重點',freq:'中頻',items:[
+        {t:'工業革命（18世紀英國）→蒸汽機→資本主義→城市化'},
+        {t:'一戰（1914-18）→凡爾賽條約；二戰（1939-45）→聯合國成立'},
+        {t:'冷戰：馬歇爾計畫→韓戰→古巴飛彈危機→柏林圍牆倒塌（1989）'},
+      ]},
+    ]
+  },
+  geo: {
+    subs: null,
+    data:[
+      {h:'台灣地理',freq:'高頻',items:[
+        {t:'地形：西部平原（農業）、中部山地（玉山3952m）、東部海岸山脈'},
+        {t:'氣候：北部（溼潤）；中南部（乾溼季分明）；東部（多雨）'},
+        {t:'颱風：5~11月，七八月最多；人口約2300萬，集中西部'},
+      ]},
+      {h:'亞洲地理',freq:'高頻',items:[
+        {t:'季風氣候：夏季西南季風（帶雨）；冬季東北季風（乾冷）'},
+        {t:'中國：黃河（北方/黃土高原）；長江（南方/稻米產區）'},
+        {t:'日本：弧形島嶼、火山地震頻繁、山多平地少'},
+        {t:'東南亞：熱帶季風/熱帶雨林；稻米、橡膠、棕櫚油'},
+      ]},
+      {h:'世界氣候',freq:'中頻',items:[
+        {t:'氣候帶：赤道熱帶雨林→副熱帶沙漠→溫帶→極地'},
+        {t:'地中海型：夏乾冬雨（南歐、加州、智利、南非、澳洲南部）'},
+      ]},
+      {h:'人文地理',freq:'中頻',items:[
+        {t:'都市化：開發中國家城鄉人口移動→大城市過度擁擠→貧民窟'},
+        {t:'全球化：跨國企業擴張、WTO貿易自由化、文化同質化'},
+        {t:'人口轉型：高出生高死亡→高出生低死亡→低出生低死亡'},
+      ]},
+    ]
+  },
+  civ: {
+    subs: null,
+    data:[
+      {h:'民主政治',freq:'高頻',items:[
+        {t:'五權分立：行政、立法、司法、考試、監察；孫中山創立',s:'與美國三權分立、英國議會制不同'},
+        {t:'立委選制：單一選區兩票制（區域+政黨票）；不分區依政黨票比例分配'},
+        {t:'地方自治：直轄市（六都）及縣市→鄉鎮市區→村里'},
+      ]},
+      {h:'法律與生活',freq:'高頻',items:[
+        {t:'法律位階：憲法>法律>命令；違憲可聲請大法官解釋'},
+        {t:'刑事責任：未滿14歲不罰；14~18歲得減刑；18歲以上完全責任'},
+        {t:'民事：7歲以下無行為能力；7~18歲限制行為能力'},
+        {t:'消費者保護法：網購七天鑑賞期；企業主負舉證責任'},
+      ]},
+      {h:'經濟與市場',freq:'高頻',items:[
+        {t:'需求法則：價格↑→需求量↓；供給法則：價格↑→供給量↑'},
+        {t:'均衡：供需交點；供給增→均衡價格↓；需求增→均衡價格↑'},
+        {t:'GDP：一年內國內生產的最終財貨與勞務的市場總價值'},
+        {t:'通膨：物價持續上漲→貨幣購買力下降；央行升息抑制通膨'},
+      ]},
+      {h:'社會與人權',freq:'中頻',items:[
+        {t:'社會化：個人學習規範的過程；家庭最重要（初級社會化）'},
+        {t:'社會流動：垂直（階層改變）；水平（職業改變但階層不變）'},
+        {t:'人權三代：第一代（自由權）→第二代（社會權）→第三代（集體權）'},
+        {t:'永續發展：SDGs 17項目標；滿足當代需求且不損害後代'},
+      ]},
+    ]
+  },
+};
+
+var allQ = [
+  // 自然-生物（10題）
+  {s:'自然',sub:'生物',diff:'易',q:'下列哪個構造是動物細胞特有，植物細胞沒有的？',opts:['細胞膜','細胞核','中心粒','核糖體'],ans:2,exp:'中心粒是動物細胞特有，與細胞分裂紡錘絲形成有關。植物細胞沒有中心粒但仍可分裂。'},
+  {s:'自然',sub:'生物',diff:'中',q:'光合作用的主要場所是？',opts:['粒線體','細胞核','葉綠體','核糖體'],ans:2,exp:'光合作用在葉綠體進行，利用光能將CO₂和H₂O合成葡萄糖，同時釋放O₂。'},
+  {s:'自然',sub:'生物',diff:'中',q:'孟德爾F2代中，顯性與隱性表現型的比例為何？',opts:['1:1','1:2:1','3:1','2:1'],ans:2,exp:'F1代（Aa）自交後，F2代基因型Aa×Aa→AA:Aa:aa=1:2:1，表現型顯性:隱性=3:1。'},
+  {s:'自然',sub:'生物',diff:'中',q:'食物鏈中，能量流動每升一個營養級，能量約剩多少？',opts:['50%','25%','10%','1%'],ans:2,exp:'能量流動效率約10%，所以頂端消費者數量最少，生態金字塔底部數量最多。'},
+  {s:'自然',sub:'生物',diff:'難',q:'下列關於人體血液循環的敘述，何者正確？',opts:['肺靜脈含有靜脈血','左心室將血液送往肺部','動脈血含氧量較高','體循環由右心室開始'],ans:2,exp:'動脈血含氧量較高（顏色鮮紅）。肺靜脈例外，雖名為靜脈但含動脈血（含氧多）。體循環由左心室開始；右心室負責肺循環。'},
+  {s:'自然',sub:'生物',diff:'易',q:'進行光合作用需要的原料包括？',opts:['O₂、H₂O、養分','CO₂、H₂O、光能','CO₂、O₂、光能','H₂O、養分、氧氣'],ans:1,exp:'光合作用原料：CO₂（來自空氣）、H₂O（來自土壤）、光能（來自太陽）。產物是葡萄糖和O₂。'},
+  {s:'自然',sub:'生物',diff:'中',q:'減數分裂產生的配子（精子或卵子）的染色體數是體細胞的？',opts:['相同','2倍','一半','4倍'],ans:2,exp:'人類體細胞46條染色體，減數分裂產生的配子23條。配子染色體數是體細胞的一半。'},
+  {s:'自然',sub:'生物',diff:'難',q:'下列何者不屬於生態系的分解者？',opts:['細菌','真菌','蚯蚓','黴菌'],ans:2,exp:'分解者是進行腐生作用的微生物，主要是細菌和真菌。蚯蚓是無脊椎動物，屬於消費者中的初級消費者，不是分解者。'},
+  {s:'自然',sub:'生物',diff:'中',q:'色盲為伴性遺傳，下列敘述何者正確？',opts:['女性不會得色盲','男性得色盲的比例較高','色盲基因位於常染色體','色盲是顯性性狀'],ans:1,exp:'色盲是X染色體隱性遺傳。男性XᶜY只需一個隱性基因就會色盲；女性需要兩個隱性基因。所以男性患者比例更高。'},
+  {s:'自然',sub:'生物',diff:'易',q:'植物細胞中，進行消耗能量的生理活動主要發生在？',opts:['細胞壁','粒線體','葉綠體','液泡'],ans:1,exp:'粒線體是細胞的能量工廠，進行有氧呼吸，分解有機物釋放能量供給生活動使用。'},
+  // 自然-化學（10題）
+  {s:'自然',sub:'化學',diff:'中',q:'將鹽酸（HCl）加入NaOH溶液，pH值如何變化？',opts:['一直上升','一直下降','先升後降','維持不變'],ans:1,exp:'NaOH為鹼性（pH>7），加入鹽酸中和後鹼性漸弱，pH持續下降，過中性點後繼續降低。'},
+  {s:'自然',sub:'化學',diff:'易',q:'下列何者屬於化學變化？',opts:['冰融化成水','水蒸發','鐵生鏽','玻璃打碎'],ans:2,exp:'鐵生鏽生成氧化鐵（Fe₂O₃），產生新物質，屬化學變化。其餘只有狀態或形狀改變，是物理變化。'},
+  {s:'自然',sub:'化學',diff:'中',q:'酚酞指示劑在鹼性溶液中呈現什麼顏色？',opts:['紅色','藍色','粉紅色','無色'],ans:2,exp:'酚酞：酸性/中性→無色；鹼性（pH>8.2）→粉紅色。石蕊則是酸紅鹼藍。'},
+  {s:'自然',sub:'化學',diff:'難',q:'某溶液pH=11，其氫離子濃度是pH=9溶液的幾倍？',opts:['2倍','10倍','1/10倍','1/100倍'],ans:3,exp:'pH每差1，氫離子濃度差10倍。pH=11比pH=9大2，所以氫離子濃度是10⁻²=1/100倍（鹼性越強，氫離子越少）。'},
+  {s:'自然',sub:'化學',diff:'中',q:'下列何者為氧化還原反應？',opts:['HCl+NaOH→NaCl+H₂O','NaCl→Na⁺+Cl⁻','2H₂+O₂→2H₂O','NaCl+AgNO₃→AgCl+NaNO₃'],ans:2,exp:'2H₂+O₂→2H₂O：氫被氧化（失去電子），氧被還原（得到電子），為氧化還原反應。中和反應、解離、沉澱反應不涉及電子轉移。'},
+  {s:'自然',sub:'化學',diff:'易',q:'下列哪種物質溶於水後不能導電？',opts:['食鹽（NaCl）','糖（葡萄糖）','燒鹼（NaOH）','食醋（醋酸）'],ans:1,exp:'導電物質是電解質，包括強酸（鹽酸、硫酸）、強鹼（NaOH、KOH）、鹽。糖是非電解質，溶於水不能導電。'},
+  {s:'自然',sub:'化學',diff:'中',q:'配平化學方程式：_Fe + _O₂ → _Fe₂O₃，係數應為？',opts:['1,1,2','2,3,2','3,2,2','4,3,2'],ans:3,exp:'4Fe + 3O₂ → 2Fe₂O₃。檢驗：Fe：4=4✓；O：6=6✓。這是鐵完全燃燒的反應。'},
+  {s:'自然',sub:'化學',diff:'難',q:'氯氣是強氧化劑，與還原劑反應時，氯被？',opts:['氧化','還原','置換','沉澱'],ans:1,exp:'氯氣（Cl₂，氯為0價）與還原劑反應，氯得到電子被還原，變成Cl⁻（-1價）。但氯本身是強氧化劑，它不會被氧化。'},
+  {s:'自然',sub:'化學',diff:'中',q:'質量守恆定律表示？',opts:['反應物質量等於生成物','反應前後原子總數相等','反應前後分子數相等','反應前後總質量相等'],ans:3,exp:'質量守恆定律：化學反應前後，物質的總質量不變。這是化學計算的基礎。'},
+  // 自然-物理（10題）
+  {s:'自然',sub:'物理',diff:'中',q:'一物體合力為零，下列何者正確？',opts:['一定靜止不動','一定等速直線運動','速度保持不變','加速度不為零'],ans:2,exp:'合力為零→加速度為零（F=ma），物體保持原本狀態：靜止或等速直線運動，速度都不改變。'},
+  {s:'自然',sub:'物理',diff:'中',q:'並聯電路中R₁=6Ω、R₂=3Ω，接12V電源，通過R₁的電流？',opts:['1A','2A','4A','6A'],ans:1,exp:'並聯各支路電壓相同=12V。I₁=V/R₁=12/6=2A。'},
+  {s:'自然',sub:'物理',diff:'中',q:'波速v=fλ，若頻率為500Hz、波長0.68m，波速為何？',opts:['340m/s','500m/s','680m/s','250m/s'],ans:0,exp:'v=fλ=500×0.68=340m/s，這是聲波在空氣中的速度。'},
+  {s:'自然',sub:'物理',diff:'難',q:'凸透鏡焦距10cm，物體置於15cm處，成何種像？',opts:['縮小倒立實像','等大倒立實像','放大倒立實像','放大正立虛像'],ans:2,exp:'f<物距<2f（10<15<20），成放大、倒立、實像。物距>2f→縮小；物距<f→正立虛像。'},
+  {s:'自然',sub:'物理',diff:'中',q:'下列何者是電磁感應的應用？',opts:['電燈泡','電動機','發電機','電阻'],ans:2,exp:'發電機利用磁通量變化產生感應電流（電磁感應）。電動機是利用電流在磁場中受力，是相反的應用。'},
+  {s:'自然',sub:'物理',diff:'易',q:'摩擦力與下列哪一因素無關？',opts:['接觸面的粗糙程度','正向力的大小','接觸面積','物體的相對速度'],ans:2,exp:'滑動摩擦力f=μN（N為正向力），與接觸面積無關，只與粗糙程度（摩擦係數）和正向力有關。'},
+  {s:'自然',sub:'物理',diff:'中',q:'串聯電路中，三個電阻R₁、R₂、R₃串聯，下列敘述何者正確？',opts:['各電阻電流不同','各電阻電壓相同','總電阻等於各電阻之和','總電阻小於最小的電阻'],ans:2,exp:'串聯特性：電流相同（I相同）；電壓分配（U總=U₁+U₂+U₃）；總電阻=R總=R₁+R₂+R₃。'},
+  {s:'自然',sub:'物理',diff:'難',q:'一物體在地球上重量為100N，若帶到月球，下列敘述何者正確？',opts:['物體質量變小','物體重量變大','物體重量變小但質量不變','物體質量和重量都變小'],ans:2,exp:'月球重力加速度約為地球1/6。重量W=mg會變小，但質量m（物質的量）不變。W地=100N，W月≈16.7N。'},
+  {s:'自然',sub:'物理',diff:'中',q:'下列何者說明了分子在做無規則運動？',opts:['氣體對容器壁的壓力','粉塵在陽光下的布朗運動','液體的沸騰','固體的膨脹'],ans:1,exp:'布朗運動（花粉等微粒在液體或氣體中的無規則運動）直接證明了分子在進行無規則的熱運動。'},
+  // 自然-地科（10題）
+  {s:'自然',sub:'地科',diff:'易',q:'台灣位於哪兩個板塊的聚合處？',opts:['太平洋板塊與歐亞板塊','菲律賓海板塊與歐亞板塊','印澳板塊與歐亞板塊','太平洋板塊與菲律賓海板塊'],ans:1,exp:'台灣位於菲律賓海板塊與歐亞板塊的聚合邊界，兩板塊持續碰撞造山，形成台灣島，也是台灣多地震多高山的主因。'},
+  {s:'自然',sub:'地科',diff:'中',q:'月食發生時，天體位置順序為何？',opts:['月球-地球-太陽','太陽-月球-地球','太陽-地球-月球','地球-太陽-月球'],ans:2,exp:'月食：太陽-地球-月球，地球影子遮住月球，發生在滿月。日食是太陽-月球-地球（新月）。'},
+  {s:'自然',sub:'地科',diff:'中',q:'地震波中，可以穿過液態地核的是？',opts:['S波','P波','兩者都可以','兩者都不可以'],ans:1,exp:'P波（縱波）可穿過固體、液體、氣體；S波（橫波）只能穿過固體，無法穿過液態地核。'},
+  {s:'自然',sub:'地科',diff:'中',q:'下列岩石屬於變質岩的是？',opts:['花崗岩','玄武岩','大理岩','砂岩'],ans:2,exp:'大理岩是石灰岩（沉積岩）經高溫高壓變質而成。花崗岩、玄武岩是火成岩；砂岩是沉積岩。'},
+  {s:'自然',sub:'地科',diff:'難',q:'滯留鋒帶來的天氣現象，最符合台灣哪個季節？',opts:['春季','梅雨季（初夏）','颱風季（夏秋）','冬季東北季風'],ans:1,exp:'滯留鋒（冷暖氣團勢力相當、長期停滯）帶來長時間降雨，即台灣的梅雨，約5~6月。'},
+  {s:'自然',sub:'地科',diff:'易',q:'地球內部主要分為幾大圈層？',opts:['2個','3個','4個','5個'],ans:1,exp:'地球內部分為地殼、地幔、地核三個圈層（按岩石圈、軟流圈、下地幔、外核、內核分類更細）。'},
+  {s:'自然',sub:'地科',diff:'中',q:'北半球冬至時，太陽直射在？',opts:['赤道','北回歸線','南回歸線','南極圈'],ans:2,exp:'冬至時太陽直射南回歸線（南緯23.5°），是北半球冬季，白晝最短。夏至時太陽直射北回歸線。'},
+  {s:'自然',sub:'地科',diff:'難',q:'下列哪個地點最容易發生地震？',opts:['板塊聚合邊界','板塊張裂邊界','板塊錯動邊界','板塊內部穩定區'],ans:2,exp:'板塊錯動邊界（如聖安地列斯斷層）、聚合邊界（海溝）、張裂邊界（中洋脊）都有地震，但張裂邊界地震較少。聚合邊界如台灣周邊地震最頻繁。'},
+  {s:'自然',sub:'地科',diff:'中',q:'火成岩的形成主要取決於？',opts:['冷卻速度','顏色深淺','礦物含量','化學成分'],ans:0,exp:'火成岩冷卻速度快→形成細粒或玻璃質（玄武岩）；冷卻速度慢→形成粗粒（花崗岩）。這是識別火成岩的重要依據。'},
+  // 數學（15題）
+  {s:'數學',diff:'易',q:'x²-5x+6=0 的兩根為？',opts:['x=1或6','x=2或3','x=-2或-3','x=1或-6'],ans:1,exp:'因式分解(x-2)(x-3)=0，x=2或x=3。驗算：2+3=5=b/a；2×3=6=c/a。'},
+  {s:'數學',diff:'中',q:'等差數列首項3、公差4，第10項為何？',opts:['39','40','43','36'],ans:0,exp:'aₙ=a₁+(n-1)d=3+(10-1)×4=3+36=39。'},
+  {s:'數學',diff:'中',q:'圓半徑6，面積為何？（π取3.14）',opts:['18.84','37.68','113.04','75.36'],ans:2,exp:'面積=πr²=3.14×36=113.04。'},
+  {s:'數學',diff:'難',q:'2x²+3x-2=0 的判別式為何？',opts:['7','25','16','-7'],ans:1,exp:'判別式=b²-4ac=9-4×2×(-2)=9+16=25。>0故有兩相異實根。'},
+  {s:'數學',diff:'中',q:'一次函數 y=2x-3，下列何者正確？',opts:['斜率為-3，y截距為2','斜率為2，y截距為-3','斜率為-2，y截距為3','斜率為3，y截距為-2'],ans:1,exp:'y=mx+b中，m為斜率，b為y截距。y=2x-3，所以斜率=2，y截距=-3。'},
+  {s:'數學',diff:'易',q:'求解：-2x+5=1',opts:['x=2','x=-2','x=3','x=-3'],ans:0,exp:'-2x+5=1 → -2x=-4 → x=2。驗算：-2(2)+5=1✓。'},
+  {s:'數學',diff:'中',q:'(a+b)²=？',opts:['a²+b²','a²+2ab+b²','a²-2ab+b²','a²-b²'],ans:1,exp:'完全平方公式：(a+b)²=a²+2ab+b²；(a-b)²=a²-2ab+b²。'},
+  {s:'數學',diff:'中',q:'√16=？',opts:['4','-4','±4','8'],ans:0,exp:'√16表示16的非負平方根，所以√16=4（不是±4）。'},
+  {s:'數學',diff:'難',q:'二次函數 y=x²-4x+3，頂點座標為？',opts:['(2,-1)','(-2,15)','(2,3)','(4,3)'],ans:0,exp:'頂點x=-b/(2a)=-(-4)/(2×1)=2；y=(2)²-4(2)+3=4-8+3=-1。頂點(2,-1)。'},
+  {s:'數學',diff:'易',q:'等比數列首項2、公比3，第3項為何？',opts:['8','18','12','6'],ans:1,exp:'aₙ=a₁×r^(n-1)，a₃=2×3^(3-1)=2×9=18。'},
+  {s:'數學',diff:'中',q:'某班有40人，其中25人選修英文，20人選修數學，12人同時選修兩科。求只選修英文的人數？',opts:['5','8','13','15'],ans:2,exp:'只選英文=選英文總數-兩科都選=25-12=13人。'},
+  {s:'數學',diff:'難',q:'三個連續整數的和為15，求最小的數？',opts:['4','5','6','7'],ans:0,exp:'設最小數為x，則x+(x+1)+(x+2)=15 → 3x+3=15 → x=4。驗算：4+5+6=15✓。'},
+  {s:'數學',diff:'中',q:'畢氏定理：若a=3、b=4，則c=？',opts:['5','6','7','8'],ans:0,exp:'c²=a²+b²=9+16=25，所以c=5。3-4-5是常見的畢氏數組。'},
+  {s:'數學',diff:'易',q:'某商品原價100元，打八折後為多少？',opts:['80元','90元','20元','180元'],ans:0,exp:'打八折=×0.8=100×0.8=80元。'},
+  {s:'數學',diff:'中',q:'機率：一副標準撲克牌52張，抽到紅心的機率為？',opts:['1/4','1/13','1/52','13/52'],ans:0,exp:'紅心有13張，機率=13/52=1/4。'},
+  // 英文（15題）
+  {s:'英文',diff:'易',q:'She _____ to Japan twice.',opts:['go','went','has been','is going'],ans:2,exp:'twice表示過去到現在的經驗，用現在完成式。has been to表示曾去過某地。'},
+  {s:'英文',diff:'中',q:'選出正確句子：',opts:['I enjoy to read.','I enjoy reading.','I enjoy read.','I enjoying reading.'],ans:1,exp:'enjoy後接動名詞(V-ing)，不接不定詞。固定記：enjoy/mind/finish/avoid接V-ing。'},
+  {s:'英文',diff:'中',q:'The book _____ was on the desk is mine.',opts:['who','whom','which','whose'],ans:2,exp:'先行詞book是事物，用which（或that）引導關係子句。who/whom用於人。'},
+  {s:'英文',diff:'難',q:'If I _____ rich, I would travel the world.',opts:['am','was','were','will be'],ans:2,exp:'假設語氣（與現在事實相反）：If+過去式(were)，主句用would+原形。be動詞假設語氣一律用were。'},
+  {s:'英文',diff:'中',q:'He _____ finish the project before the deadline.',opts:['must to','should to','ought to','has to'],ans:2,exp:'ought to（應該）後接原形動詞，不加to再加動詞。has to也正確但選ought to最符。'},
+  {s:'英文',diff:'易',q:'現在完成式：I _____ already finished my homework.',opts:['am','have','is','was'],ans:1,exp:'現在完成式用have/has+p.p.。主語I用have。例：I have finished，He has finished。'},
+  {s:'英文',diff:'中',q:'被動式：The house _____ last year.',opts:['builds','built','was built','is building'],ans:2,exp:'被動式：be+p.p.。過去式被動：was/were+p.p.。房子是被動物，用was built。'},
+  {s:'英文',diff:'中',q:'比較級：This book is _____ than that one.',opts:['more interesting','most interesting','interesting','less interesting'],ans:0,exp:'比較級：more+形容詞+than。最高級：the most+形容詞。interesting是多音節形容詞。'},
+  {s:'英文',diff:'難',q:'賓語從句：He told me _____ the exam next week.',opts:['that he would take','that will he take','which he takes','when would he take'],ans:0,exp:'間接敘述用過去式背景，內句用過去未來式(would take)。正確：He told me that he would take the exam.'},
+  {s:'英文',diff:'易',q:'單字：accomplish = ?',opts:['失敗','完成','開始','計畫'],ans:1,exp:'accomplish=complete successfully，意為「完成」「達成」。例：accomplish a goal（達成目標）。'},
+  {s:'英文',diff:'中',q:'閱讀技巧：文章首段通常介紹？',opts:['故事結局','主要論點或背景','細節描寫','無特定模式'],ans:1,exp:'閱讀策略：首段常含主旨或背景信息；最後段常為結論。先讀題找關鍵字再掃描文章。'},
+  {s:'英文',diff:'中',q:'詞義推測：The weather is very unfavorable for picnic.',opts:['有利的','不利的','溫暖的','晴朗的'],ans:1,exp:'unfavorable = not favorable = 不利的。un-是否定前綴，favorable（有利的）→unfavorable（不利的）。'},
+  {s:'英文',diff:'難',q:'分詞構句：_____ the book, he began to understand the concept.',opts:['Read','Reading','Having read','To read'],ans:2,exp:'分詞構句表示完成：Having read the book（讀完書之後），主句動詞began表動作已完成。'},
+  {s:'英文',diff:'易',q:'轉折詞：He is very busy, _____ he still helps others.',opts:['because','therefore','however','so'],ans:2,exp:'however（然而）表轉折，連接兩個相反或對比的想法。因果用because/so；順序用therefore。'},
+  {s:'英文',diff:'中',q:'単語：contribute to = ?',opts:['減少','貢獻於','反對','開始'],ans:1,exp:'contribute to = help to cause something = 貢獻於/促成。例：contribute to society（對社會有所貢獻）。'},
+  // 歷史（12題）
+  {s:'歷史',diff:'易',q:'1895年馬關條約，台灣的命運為何？',opts:['租借給日本99年','永久割讓給日本','日本託管50年','聯合國接管'],ans:1,exp:'馬關條約：清廷將台灣、澎湖永久割讓給日本，並賠款白銀二億兩。'},
+  {s:'歷史',diff:'中',q:'台灣二二八事件發生於哪一年？',opts:['1945','1947','1949','1950'],ans:1,exp:'二二八事件：1947年2月28日，起因為台北查緝私菸衝突，引發全島抗爭。'},
+  {s:'歷史',diff:'中',q:'台灣何時解除戒嚴？',opts:['1975年','1980年','1987年','1991年'],ans:2,exp:'1987年7月15日，蔣經國總統宣布解除長達38年的戒嚴，是民主化重要里程碑。'},
+  {s:'歷史',diff:'中',q:'下列何者是第一次世界大戰的導火線？',opts:['德國入侵波蘭','奧匈帝國皇儲遭暗殺','美國加入協約國','俄國革命'],ans:1,exp:'1914年，奧匈帝國皇儲斐迪南大公在塞拉耶佛遭刺殺，成為一戰導火線，引發列強連鎖宣戰。'},
+  {s:'歷史',diff:'難',q:'台灣十大建設最主要的目的是？',opts:['解決失業','現代化建設促進經濟發展','政治宣傳','軍事防禦'],ans:1,exp:'1973-1985年進行的十大建設（中山高速公路、北迴鐵路等），是台灣現代化和經濟快速成長的關鍵。'},
+  {s:'歷史',diff:'易',q:'鴉片戰爭後，中國被迫開放的主要通商口岸稱為？',opts:['租界','開放區','五口通商','商業區'],ans:2,exp:'鴉片戰爭後的南京條約規定五口通商：廣州、廈門、福州、寧波、上海。'},
+  {s:'歷史',diff:'中',q:'冷戰期間，美國為援助西歐復興推行的計畫為？',opts:['馬歇爾計畫','柏林空運','韓戰','古巴飛彈危機'],ans:0,exp:'馬歇爾計畫（1948-1952）是美國援助西歐經濟復興的大規模計畫，也是圍堵蘇聯的冷戰策略。'},
+  {s:'歷史',diff:'難',q:'五四運動（1919）最主要的影響是？',opts:['結束帝制','推動新文化運動和白話文學','建立共和','對日宣戰'],ans:1,exp:'五四運動促進了新文化運動，推廣白話文（白話詩、新聞等），標誌著中國文化現代化的開始。'},
+  {s:'歷史',diff:'中',q:'二二八事件後，台灣的政治局勢發展為？',opts:['獨立','民主化','戒嚴統治','外來政權接管'],ans:2,exp:'二二八事件後，國民政府開始長期戒嚴統治（1949-1987），直到1987年才解嚴，民主化才真正開始。'},
+  {s:'歷史',diff:'易',q:'台灣最早的日本統治時期稱為？',opts:['清領時期','日治時期','戰後時期','現代時期'],ans:1,exp:'1895-1945年為台灣日治時期（日治51年），這段時期台灣進行現代化建設和教育改革。'},
+  {s:'歷史',diff:'中',q:'中華人民共和國成立於何時？',opts:['1947年','1949年','1951年','1945年'],ans:1,exp:'1949年10月1日，中華人民共和國在北京成立，標誌著中國統一和社會主義革命的成功。'},
+  {s:'歷史',diff:'難',q:'下列哪個事件促使聯合國的成立？',opts:['一戰結束','二戰結束','冷戰開始','韓戰爆發'],ans:1,exp:'聯合國在1945年二戰結束後成立（舊金山會議），目的是維護世界和平，吸取國聯失敗的教訓。'},
+  // 地理（12題）
+  {s:'地理',diff:'易',q:'台灣玉山海拔約多少公尺？',opts:['2663m','3952m','3416m','4211m'],ans:1,exp:'玉山主峰3952公尺，是台灣及東北亞最高峰，位於南投、嘉義交界。'},
+  {s:'地理',diff:'中',q:'地中海型氣候特色為何？',opts:['全年高溫多雨','夏乾冬雨','全年低溫少雨','夏雨冬乾'],ans:1,exp:'地中海型氣候：夏季乾燥，冬季多雨。分布於南歐、加州、智利、南非西南部、澳洲南部。'},
+  {s:'地理',diff:'中',q:'下列哪個地區屬於熱帶雨林氣候？',opts:['台灣','埃及','亞馬遜流域','加州'],ans:2,exp:'亞馬遜流域位於赤道附近，全年高溫多雨，是典型熱帶雨林氣候。台灣為副熱帶；埃及為沙漠；加州為地中海型。'},
+  {s:'地理',diff:'易',q:'台灣的主要水系有哪些？',opts:['黃河、長江','淡水河、高屏溪','密西西比河','萊茵河'],ans:1,exp:'台灣主要河流：西側淡水河、大安溪、大甲溪、濁水溪、高屏溪；東側花蓮溪、秀姑巒溪等。'},
+  {s:'地理',diff:'中',q:'東南亞主要經濟作物包括？',opts:['小麥、大麥','稻米、橡膠、棕櫚油','玉米、燕麥','馬鈴薯、番茄'],ans:1,exp:'東南亞氣候適合稻米（水稻）種植、橡膠種植園、棕櫚油生產，是世界重要供應地。'},
+  {s:'地理',diff:'難',q:'溫帶大陸型氣候的特點為？',opts:['全年溫暖潮溼','四季分明、冬冷夏熱、降水較少','終年寒冷','高溫多雨'],ans:1,exp:'溫帶大陸型氣候：四季分明、冬季寒冷、夏季炎熱、全年降水偏少。分布於亞洲內陸、北美內陸。'},
+  {s:'地理',diff:'中',q:'日本最大的城市群為？',opts:['東京灣地區','大阪地區','名古屋地區','京都地區'],ans:0,exp:'東京灣地區（含東京、橫濱、川崎等）是日本最大的都市圈，經濟中心。'},
+  {s:'地理',diff:'易',q:'中國最長的河流是？',opts:['黃河','長江','珍珠江','淮河'],ans:1,exp:'長江全長6300公里，是中國最長河流，也是亞洲第一長河，流經華中、華東地區。'},
+  {s:'地理',diff:'中',q:'北風（北半球冬季風）帶來的影響為？',opts:['溫暖多雨','寒冷乾燥','高溫乾燥','溫暖乾燥'],ans:1,exp:'北半球冬季東北季風（北方冷高壓往南）帶來冷空氣，導致氣溫下降、天氣乾燥。'},
+  {s:'地理',diff:'難',q:'喜馬拉雅山脈是由哪兩個板塊碰撞形成？',opts:['太平洋板塊與歐亞板塊','印澳板塊與歐亞板塊','非洲板塊與歐亞板塊','美洲板塊與太平洋板塊'],ans:1,exp:'喜馬拉雅山脈由印度板塊（印澳板塊的一部分）與歐亞板塊的碰撞隆起形成，是世界最高山脈。'},
+  {s:'地理',diff:'中',q:'紐約、倫敦、巴黎等城市都分佈在？',opts:['地中海沿岸','溫帶海洋性氣候區','熱帶地區','沙漠邊緣'],ans:1,exp:'這些北半球著名城市都位於溫帶海洋性氣候區（或溫帶季風氣候區），四季分明、溫暖適宜。'},
+  // 公民（12題）
+  {s:'公民',diff:'易',q:'台灣地方政府層級由大到小？',opts:['省→縣市→鄉鎮→村里','直轄市/縣市→鄉鎮市區→村里','縣市→直轄市→鄉鎮→村里','直轄市→省→縣市→村里'],ans:1,exp:'台灣地方自治層級：直轄市（六都）及縣市→鄉鎮市區→村里。省已虛級化。'},
+  {s:'公民',diff:'中',q:'商品價格上升，根據需求法則，需求量如何變化？',opts:['需求量增加','需求量減少','需求量不變','需求曲線右移'],ans:1,exp:'需求法則：價格與需求量反向關係，價格上升→需求量下降。'},
+  {s:'公民',diff:'中',q:'依我國法律，幾歲以下的人完全沒有行為能力？',opts:['7歲','12歲','14歲','18歲'],ans:0,exp:'民法規定：7歲以下為無行為能力人；7~18歲為限制行為能力人；18歲以上為完全行為能力人。'},
+  {s:'公民',diff:'難',q:'下列何者不屬於「第二代人權」（社會權）？',opts:['工作權','教育權','言論自由','生存權'],ans:2,exp:'第一代人權（自由權）：言論、財產、宗教自由等。第二代人權（社會權）：工作權、教育權、生存權等，需國家積極提供。'},
+  {s:'公民',diff:'易',q:'五權分立中不包括以下哪一權？',opts:['立法權','司法權','教育權','監察權'],ans:2,exp:'五權分立：立法、行政、司法、考試、監察。「教育權」不在五權中。'},
+  {s:'公民',diff:'中',q:'消費者保護法中，網路購物的鑑賞期為？',opts:['3天','7天','14天','30天'],ans:1,exp:'消費者保護法規定網路購物等遠距交易有七天鑑賞期，可無條件退貨（不含運費）。'},
+  {s:'公民',diff:'中',q:'GDP代表？',opts:['人民生活水準','國民幸福指數','一年內國內生產的最終財貨和勞務的市場總價值','人均收入'],ans:2,exp:'GDP（國內生產毛額）=一定時期內國內生產的全部最終財貨和勞務的市場價值。'},
+  {s:'公民',diff:'難',q:'如果央行升息，下列何者最可能發生？',opts:['物價上升','通貨膨脹加劇','借貸成本升高，消費減少','股價上漲'],ans:2,exp:'升息政策：銀行利率升高→借錢更貴→企業和個人借貸減少→消費和投資下降→抑制通膨。'},
+  {s:'公民',diff:'易',q:'以下哪個不是民主政治的特點？',opts:['人民主權','權力分立','法治精神','集中統治'],ans:3,exp:'民主政治特點：人民主權、權力分立、法治精神、保障人權。「集中統治」是獨裁/專制政治的特點。'},
+  {s:'公民',diff:'中',q:'法律位階由高到低為？',opts:['憲法>命令>法律','法律>憲法>命令','憲法>法律>命令','命令>法律>憲法'],ans:2,exp:'法律位階：憲法（最高）>法律（法律案）>命令（部會法規）。違憲可聲請大法官解釋。'},
+  {s:'公民',diff:'難',q:'永續發展的核心概念是？',opts:['經濟成長最大化','環境保護為第一優先','滿足當代需求，不損害後代需求','優先發展中國家經濟'],ans:2,exp:'永續發展定義：既滿足當代人的需求，又不損害後代人滿足需求的能力的發展方式。'},
+];
+
+var curSubject = 'sci';
+var curSciSub = '生物';
+var curTab = 'notes';
+var quizQ = [];
+var qIdx = 0, qScore = 0, qAnswered = false;
+var stats = {};
+
+function renderSubChips() {
+  var row = document.getElementById('sub-chips');
+  var s = notes[curSubject];
+  if (!s.subs) { row.style.display='none'; return; }
+  row.style.display='flex';
+  var html = '';
+  for (var i=0; i<s.subs.length; i++) {
+    var active = s.subs[i] === curSciSub ? ' on' : '';
+    html += '<button class="chip'+active+'" data-sub="'+s.subs[i]+'">'+s.subs[i]+'</button>';
+  }
+  row.innerHTML = html;
+  row.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('chip')) return;
+    curSciSub = e.target.getAttribute('data-sub');
+    document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+    e.target.classList.add('on');
+    renderNoteContent();
+  });
+}
+
+function renderNoteContent() {
+  var s = notes[curSubject];
+  var data = s.subs ? s[curSciSub] : s.data;
+  if (!data) { document.getElementById('notes-content').innerHTML='<p class="hint">暫無資料</p>'; return; }
+  var html = '';
+  for (var i=0; i<data.length; i++) {
+    var sec = data[i];
+    var tagCls = sec.freq==='高頻'?'tag-r':'tag-b';
+    html += '<div class="notes-box"><div class="note-h">'+sec.h+'<span class="tag '+tagCls+'">'+sec.freq+'</span></div>';
+    for (var j=0; j<sec.items.length; j++) {
+      var item = sec.items[j];
+      html += '<div class="note-item"><div class="dot"></div><div class="note-t">'+item.t;
+      if (item.s) html += '<div class="note-s">'+item.s+'</div>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+  }
+  document.getElementById('notes-content').innerHTML = html;
+}
+
+function renderNotes() {
+  renderSubChips();
+  renderNoteContent();
+}
+
+function startQuiz() {
+  var subMap = {sci:'自然',math:'數學',eng:'英文',hist:'歷史',geo:'地理',civ:'公民'};
+  var label = subMap[curSubject];
+  var pool = [];
+  for (var i=0; i<allQ.length; i++) {
+    if (allQ[i].s === label) pool.push(allQ[i]);
+  }
+  if (pool.length === 0) pool = allQ;
+  var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
+  quizQ = shuffled.slice(0, Math.min(15, shuffled.length));
+  qIdx = 0; qScore = 0; qAnswered = false;
+  renderQ();
+}
+
+function renderQ() {
+  var q = quizQ[qIdx];
+  var pct = Math.round(((qIdx+1)/quizQ.length)*100);
+  document.getElementById('q-label').textContent = '題目 '+(qIdx+1)+'/'+quizQ.length;
+  document.getElementById('q-score').textContent = '答對：'+qScore;
+  document.getElementById('q-bar').style.width = pct+'%';
+  qAnswered = false;
+  document.getElementById('btn-next').style.display = 'none';
+  var diffMap = {易:'tag-g',中:'tag-b',難:'tag-r'};
+  var subLabel = q.sub ? q.s+'・'+q.sub : q.s;
+  var html = '<div class="q-card"><div class="q-meta"><span class="tag tag-b">'+subLabel+'</span><span class="tag '+(diffMap[q.diff]||'tag-b')+'">'+q.diff+'</span></div>';
+  html += '<div class="q-text">'+q.q+'</div><div class="opts" id="opts">';
+  for (var i=0; i<q.opts.length; i++) {
+    html += '<button class="opt" data-i="'+i+'">'+'ABCD'[i]+'. '+q.opts[i]+'</button>';
+  }
+  html += '</div><div class="explain" id="explain"><strong>解析：</strong>'+q.exp+'</div></div>';
+  document.getElementById('q-container').innerHTML = html;
+  document.getElementById('opts').addEventListener('click', function(e) {
+    var btn = e.target;
+    if (btn.tagName !== 'BUTTON') return;
+    if (qAnswered) return;
+    checkAns(parseInt(btn.getAttribute('data-i')));
+  });
+}
+
+function checkAns(i) {
+  if (qAnswered) return;
+  qAnswered = true;
+  var q = quizQ[qIdx];
+  var key = q.sub ? q.s+'・'+q.sub : q.s;
+  if (!stats[key]) stats[key] = {t:0,c:0};
+  stats[key].t++;
+  var btns = document.querySelectorAll('.opt');
+  for (var k=0; k<btns.length; k++) btns[k].disabled = true;
+  if (i === q.ans) {
+    qScore++;
+    stats[key].c++;
+    btns[i].classList.add('correct');
+  } else {
+    btns[i].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+  }
+  document.getElementById('explain').classList.add('show');
+  document.getElementById('q-score').textContent = '答對：'+qScore;
+  document.getElementById('btn-next').style.display = 'inline-block';
+}
+
+function nextQ() {
+  if (qIdx >= quizQ.length - 1) {
+    var pct = Math.round(qScore/quizQ.length*100);
+    document.getElementById('q-container').innerHTML = '<div class="q-card" style="text-align:center;padding:28px"><div style="font-size:30px;font-weight:700;color:#378ADD;margin-bottom:8px">'+qScore+'/'+quizQ.length+'</div><div style="font-size:14px;color:#6b6b6b;margin-bottom:18px">正確率 '+pct+'%</div><button class="btn primary" id="btn-restart">再刷一輪</button></div>';
+    document.getElementById('btn-next').style.display = 'none';
+    document.getElementById('btn-restart').addEventListener('click', startQuiz);
+    return;
+  }
+  qIdx++;
+  renderQ();
+}
+
+function updateStats() {
+  var total=0, correct=0;
+  for (var k in stats) { total+=stats[k].t; correct+=stats[k].c; }
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-correct').textContent = correct;
+  document.getElementById('st-pct').textContent = total>0?Math.round(correct/total*100)+'%':'—';
+  if (total===0) { document.getElementById('weak-list').innerHTML='<p class="hint">先完成練習題，這裡會顯示弱點分析</p>'; return; }
+  var html='';
+  for (var cat in stats) {
+    var v=stats[cat];
+    var p=v.t>0?Math.round(v.c/v.t*100):null;
+    var color=p===null?'#aaa':p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    var label=p===null?'未答':p>=70?'良好':p>=50?'需加強':'重點補強';
+    html+='<div class="weak-item"><span>'+cat+'</span><span style="display:flex;align-items:center;gap:4px"><span class="mini-bar-bg"><span class="mini-bar" style="width:'+(p||0)+'%;background:'+color+'"></span></span><span style="font-size:12px;color:'+color+';min-width:36px">'+(p!==null?p+'%':'-')+'</span><span style="font-size:12px;color:'+color+'">'+label+'</span></span></div>';
+  }
+  document.getElementById('weak-list').innerHTML = html;
+}
+
+document.getElementById('subject-bar').addEventListener('click', function(e) {
+  var btn = e.target;
+  if (!btn.classList.contains('sb')) return;
+  document.querySelectorAll('.sb').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  curSubject = btn.getAttribute('data-s');
+  curSciSub = '生物';
+  if (curTab==='notes') renderNotes();
+  else if (curTab==='quiz') startQuiz();
+});
+
+document.getElementById('tab-bar').addEventListener('click', function(e) {
+  var btn = e.target;
+  if (!btn.classList.contains('tb')) return;
+  document.querySelectorAll('.tb').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  curTab = btn.getAttribute('data-t');
+  document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('on'); });
+  document.getElementById('pane-'+curTab).classList.add('on');
+  if (curTab==='quiz') startQuiz();
+  else if (curTab==='stats') updateStats();
+  else renderNotes();
+});
+
+document.getElementById('btn-next').addEventListener('click', nextQ);
+document.getElementById('btn-reset').addEventListener('click', function() { stats={}; updateStats(); });
+
+renderNotes();
+startQuiz();
+</script>
+</body>
+</html>
